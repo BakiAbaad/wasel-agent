@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="ar">
+<head>
+  <meta charset="utf-8" />
+  <title>Wasel Agent</title>
+  <style>
+    body { font-family: Arial, sans-serif; direction: rtl; padding: 20px; background: #f7f7f7; }
+    .container { max-width: 1000px; margin: auto; }
+    #chat { border: 1px solid #ddd; background: #fff; padding: 15px; height: 400px; overflow: auto; border-radius: 8px; }
+    .msg { margin: 8px 0; }
+    .user { color: #123; }
+    .bot { color: #0a6b2b; }
+    input, button { padding: 10px; font-size: 16px; }
+    button { background: #0a6b2b; color: white; border: none; border-radius: 6px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Wasel Agent</h2>
+
+    <div>
+      <label>مسار المشروع للفهرسة:</label><br />
+      <input id="path" style="width:80%" placeholder="../wasel-wrt-ai" />
+      <button onclick="indexRepo()">Index repo</button>
+      <div id="status"></div>
+    </div>
+
+    <hr />
+
+    <div id="chat"></div>
+
+    <div style="margin-top: 12px;">
+      <input id="q" style="width:80%" placeholder="اكتب سؤالك..." />
+      <button onclick="ask()">اسأل</button>
+    </div>
+  </div>
+
+  <script>
+    function addMessage(role, text) {
+      const el = document.createElement("div");
+      el.className = "msg " + role;
+      el.textContent = (role === "user" ? "أنت: " : "الوكيل: ") + text;
+      document.getElementById("chat").appendChild(el);
+      document.getElementById("chat").scrollTop = document.getElementById("chat").scrollHeight;
+    }
+
+    async function indexRepo() {
+      const path = document.getElementById("path").value.trim();
+      if (!path) return alert("أدخل مسار المشروع أولاً");
+      document.getElementById("status").textContent = "جاري الفهرسة...";
+      const res = await fetch("/api/index", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ path })
+      });
+      const data = await res.json();
+      document.getElementById("status").textContent = JSON.stringify(data);
+    }
+
+    async function ask() {
+      const q = document.getElementById("q").value.trim();
+      if (!q) return;
+      addMessage("user", q);
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query: q, k: 5 })
+      });
+      const data = await res.json();
+      addMessage("bot", data.answer || "لا يوجد رد");
+    }
+  </script>
+</body>
+</html>
