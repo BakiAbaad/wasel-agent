@@ -1,0 +1,3 @@
+Trigger build: commit created to start Windows installer workflow.
+
+This file was added to trigger the GitHub Actions workflow that builds the Windows installer (PyInstaller + Inno Setup).
